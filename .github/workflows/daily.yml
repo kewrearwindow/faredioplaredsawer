@@ -13,6 +13,8 @@ jobs:
   docker-cycle:
     runs-on: ubuntu-latest
     timeout-minutes: 290
+    permissions:
+      contents: write
 
     steps:
       - name: Collect runner public IP (early)
@@ -137,23 +139,45 @@ jobs:
         if: env.SHOULD_RUN == 'true'
         run: |
           chmod +x script.sh
-          chmod +x one.sh two.sh three.sh
 
       - name: Run cyclic Docker script
         if: env.SHOULD_RUN == 'true'
         env:
-          SESSION_COPY_DELAY: 3000 # Wait 40 minutes before copying sessions
+          PROJECT_NAME: '007-of-one'
+          SESSION_COPY_DELAY: 2400 # Wait 40 minutes before copying sessions
           ENABLE_SESSION_UPLOAD: 'true' # Set to 'false' to disable artifact upload
+          ENABLE_ARTIFACT_UPLOAD: 'true' # Upload as Build Artifact
+          ENABLE_RELEASE_UPLOAD: 'false' # Upload to GitHub Release
           ENABLE_SESSION_RESTORE: 'false' # Set to 'true' to enable session restore (and disable upload)
           SESSION_RESTORE_URL_ONE: ${{ secrets.SESSION_RESTORE_URL_ONE }}
           SESSION_RESTORE_URL_TWO: ${{ secrets.SESSION_RESTORE_URL_TWO }}
           SESSION_RESTORE_URL_THREE: ${{ secrets.SESSION_RESTORE_URL_THREE }}
+          ACCOUNT_1: ${{ secrets.ACCOUNT_1 }}
+          ACCOUNT_2: ${{ secrets.ACCOUNT_2 }}
+          ACCOUNT_3: ${{ secrets.ACCOUNT_3 }}
+          ARTIFACT_NAME_CUSTOM: ${{ secrets.ARTIFACT_NAME_CUSTOM }}
+          SCRIPT_URL_ONE: ${{ secrets.SCRIPT_URL_ONE }}
+          SCRIPT_URL_TWO: ${{ secrets.SCRIPT_URL_TWO }}
+          SCRIPT_URL_THREE: ${{ secrets.SCRIPT_URL_THREE }}
         run: ./script.sh
 
       - name: Upload Sessions Artifact
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_RUN == 'true' && env.ENABLE_ARTIFACT_UPLOAD == 'true' && env.ARTIFACT_CREATED == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: sessions-zip
+          name: ${{ env.ARTIFACT_NAME }}
           path: sessions.zip
           retention-days: 5
+
+      - name: Prepare Release File
+        if: env.SHOULD_RUN == 'true' && env.ENABLE_RELEASE_UPLOAD == 'true' && env.ARTIFACT_CREATED == 'true'
+        run: cp sessions.zip "${{ env.ARTIFACT_NAME }}.zip"
+
+      - name: Upload to Release
+        if: env.SHOULD_RUN == 'true' && env.ENABLE_RELEASE_UPLOAD == 'true' && env.ARTIFACT_CREATED == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: project-007
+          files: "${{ env.ARTIFACT_NAME }}.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
