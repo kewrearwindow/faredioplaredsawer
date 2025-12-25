@@ -1,4 +1,4 @@
-name: 006-of-two Docker Cycle (with IP Gate) (09:30 PM IST)
+name: 007-of-two Docker Cycle (with IP Gate) (09:30 PM IST)
 
 on:
   schedule:
@@ -144,12 +144,12 @@ jobs:
       - name: Run cyclic Docker script
         if: env.SHOULD_RUN == 'true'
         env:
-          PROJECT_NAME: '007-of-three'
+          PROJECT_NAME: '007-of-two'
           SESSION_COPY_DELAY: 2400 # Wait 40 minutes before copying sessions
-          ENABLE_SESSION_UPLOAD: 'true' # Set to 'false' to disable artifact upload
-          ENABLE_ARTIFACT_UPLOAD: 'true' # Upload as Build Artifact
+          ENABLE_SESSION_UPLOAD: 'false' # Set to 'false' to disable artifact upload
+          ENABLE_ARTIFACT_UPLOAD: 'false' # Upload as Build Artifact
           ENABLE_RELEASE_UPLOAD: 'false' # Upload to GitHub Release
-          ENABLE_SESSION_RESTORE: 'false' # Set to 'true' to enable session restore (and disable upload)
+          ENABLE_SESSION_RESTORE: 'true' # Set to 'true' to enable session restore (and disable upload)
           SESSION_RESTORE_URL_ONE: ${{ secrets.SESSION_RESTORE_URL_ONE }}
           SESSION_RESTORE_URL_TWO: ${{ secrets.SESSION_RESTORE_URL_TWO }}
           SESSION_RESTORE_URL_THREE: ${{ secrets.SESSION_RESTORE_URL_THREE }}
